@@ -1,0 +1,17 @@
+target
+.idea
+*.iml
+*.pyc
+*.swp
+.DS_Store
+dependency-reduced-pom.xml
+venv/
+sage/src/test/python/logs
+sage/src/test/resources/regression/*.json
+sage/mendel-stage.yml
+sage/home/cass.json
+sage/home/done_map
+logs
+*-nexus.json
+pom.xml.releaseBackup
+pom.xml.versionsBackup
