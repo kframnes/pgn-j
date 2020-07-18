@@ -1,7 +1,10 @@
 package com.framnes.pgnj;
 
-import com.framnes.pgnj.engine.Engine;
+import com.framnes.pgnj.job.AnalyzeGameJob;
 import com.github.bhlangonijr.chesslib.pgn.PgnHolder;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Main entry point into Pgn-J, a program meant to provide statistical analysis of chess games in order to identify
@@ -9,28 +12,67 @@ import com.github.bhlangonijr.chesslib.pgn.PgnHolder;
  */
 public class PgnJ {
 
-    public PgnJ(String enginePath, String pgnPath) {
+    private final ExecutorService executor;
 
-        PgnHolder pgn = new PgnHolder(pgnPath);
+    private final String targetPlayer;
+    private final String enginePath;
+    private final PgnHolder games;
+
+    public PgnJ(String enginePath, String pgnPath, String targetPlayer) {
+
+        this.targetPlayer = targetPlayer;
+        this.enginePath = enginePath;
+
+        // Load PGN of games
+        //
+        this.games = new PgnHolder(pgnPath);
         try {
-            pgn.loadPgn();
+            games.loadPgn();
         } catch (Exception e) {
             throw new RuntimeException("There was an issue loading PGN file");
         }
 
-        Engine engine = new Engine(enginePath);
-        if (!engine.isReady()) {
-            throw new RuntimeException("There was a problem communicating with the engine");
-        }
+        // Initialize executor service
+        //
+        executor = Executors.newFixedThreadPool(5);
 
+    }
+
+    /**
+     * Using the defined engine, analyze the target players games from PGN file.
+     */
+    public void analyze() {
+
+        games.getGame().stream()
+                .map((game) -> new AnalyzeGameJob(enginePath, targetPlayer, game))
+                .peek(AnalyzeGameJob::describeJob)
+                .forEach(executor::submit);
+
+    }
+
+    /**
+     * Output report on target players accuracy.
+     */
+    public void report() {
+
+    }
+
+    public void destroy() {
+        executor.shutdown();
+        executor.shutdownNow();
     }
 
     public static void main(String [] args) {
 
         String enginePath = System.getProperty("enginePath");
         String pgnPath = System.getProperty("pgnPath");
+        String targetPlayer = "keithframnes";
 
-        new PgnJ(enginePath,pgnPath);
+        PgnJ pgnJ = new PgnJ(enginePath, pgnPath, targetPlayer);
+        pgnJ.analyze();
+
+
+        pgnJ.destroy();
 
     }
 

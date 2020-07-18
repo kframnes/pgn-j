@@ -29,6 +29,22 @@ public class Engine {
     }
 
     /**
+     * Tells the engine we're starting a new game.
+     *
+     * @return true if the engine is ready; otherwise false.
+     */
+    public boolean startNewGame() {
+        sendCommand("ucinewgame");
+        return isReady();
+    }
+
+    public void bestMove(String fen) {
+        sendCommand("position fen " + fen);
+        sendCommand("go depth 10 movetime 5000");
+        hasResponse("");
+    }
+
+    /**
      * Confirms that we have a valid engine that is ready to interact with.
      *
      * @return true if the engine is ready; otherwise false.
