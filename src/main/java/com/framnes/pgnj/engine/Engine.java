@@ -33,7 +33,7 @@ public class Engine {
      *
      * @return true if the engine is ready; otherwise false.
      */
-    public boolean engineIsValid() {
+    public boolean isReady() {
         sendCommand("isready");
         return hasResponse("readyok");
     }
