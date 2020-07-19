@@ -1,5 +1,8 @@
 package com.framnes.pgnj.engine;
 
+import com.framnes.pgnj.evaluation.EngineMove;
+import com.framnes.pgnj.evaluation.EvaluatedMove;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -13,12 +16,14 @@ import java.util.regex.Pattern;
  */
 public class Engine {
 
-    final private static String BEST_MOVE_PATTERN = "info depth [0-9]+ seldepth [0-9]+ multipv ([0-9]+) " +
-            "score cp (-?[0-9]+) nodes [0-9]+ nps [0-9]+ hashfull [0-9]+ tbhits [0-9]+ time [0-9]+ pv ([a-h1-8]+).*";
-    final private static int THINK_TIME_MS = 15000;
+    final private static String BEST_MOVE_PATTERN = ".*?multipv ([0-9]+) score cp (-?[0-9]+).*?pv ([a-h1-8]+).*";
+    final private static String BEST_MATE_PATTERN = ".*?multipv ([0-9]+) score mate (-?[0-9]+).*?pv ([a-h1-8]+).*";
+    //final private static int THINK_TIME_MS = 10000;
+    final private static int DEPTH = 20;
     final private static int VARIATIONS = 3;
 
     final private Pattern bestMovePattern;
+    final private Pattern bestMatePattern;
     final private BufferedReader input;
     final private BufferedWriter output;
     final private Process process;
@@ -26,6 +31,7 @@ public class Engine {
     public Engine(String enginePath) {
 
         bestMovePattern = Pattern.compile(BEST_MOVE_PATTERN);
+        bestMatePattern = Pattern.compile(BEST_MATE_PATTERN);
 
         try {
             process = Runtime.getRuntime().exec(enginePath);
@@ -49,9 +55,9 @@ public class Engine {
         return isReady();
     }
 
-    public String[] bestMoves(String fen) {
+    public EvaluatedMove bestMoves(String fen) {
         sendCommand("position fen " + fen);
-        sendCommand("go movetime " + THINK_TIME_MS);
+        sendCommand("go depth " + DEPTH);
         return readBestMoves();
     }
 
@@ -72,7 +78,7 @@ public class Engine {
      */
     private void sendCommand(String command) {
         try {
-            System.out.println(" [PGN-J] >>> " + command);
+            //System.out.println(" [PGN-J] >>> " + command);
             output.write(command + "\n");
             output.flush();
         } catch (IOException e) {
@@ -88,30 +94,38 @@ public class Engine {
      */
     private boolean hasResponse(String expected) {
         return input.lines()
-                .peek((line) -> System.out.println( " [ENGINE] <<< " + line))
+                //.peek((line) -> System.out.println( " [ENGINE] <<< " + line))
                 .anyMatch(expected::equals);
     }
 
     /**
-     * Read output from engine until we
+     * Read output from engine until we see the phrase "bestmove" indicating the evaluation has ended.
      *
-     * @return an String[] of the best moves (best at 0, decreasing...)
+     * @return an {@code EvaluatedMove} of the best moves (best at 0, decreasing...)
      */
-    private String[] readBestMoves() {
+    private EvaluatedMove readBestMoves() {
 
-        String[] moves = new String[VARIATIONS];
+        EngineMove[] moves = new EngineMove[VARIATIONS];
 
         input.lines()
                 .peek((line) -> System.out.println( " [ENGINE] <<< " + line))
                 .peek((output) -> {
                     Matcher match = bestMovePattern.matcher(output);
                     if (match.matches()) {
-                        moves[Integer.parseInt(match.group(1))-1] = match.group(3);
+                        moves[Integer.parseInt(match.group(1))-1] = new EngineMove(match.group(3), Integer.parseInt(match.group(2)));
+                    } else {
+
+                        Matcher mate = bestMatePattern.matcher(output);
+                        if (mate.matches()) {
+                            int mateInCoefficient = Integer.parseInt(match.group(2)) < 0 ? -1 : 1;
+                            moves[Integer.parseInt(mate.group(1)) - 1] = new EngineMove(mate.group(3), 1000 * mateInCoefficient);
+                        }
+
                     }
                 })
                 .anyMatch((line) -> line.contains("bestmove"));
 
-        return moves;
+        return new EvaluatedMove(moves);
 
     }
 

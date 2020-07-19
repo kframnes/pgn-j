@@ -1,10 +1,16 @@
 package com.framnes.pgnj.job;
 
+import com.framnes.pgnj.PgnJ;
 import com.framnes.pgnj.engine.Engine;
+import com.framnes.pgnj.evaluation.EvaluatedMove;
+import com.github.bhlangonijr.chesslib.Board;
+import com.github.bhlangonijr.chesslib.Side;
 import com.github.bhlangonijr.chesslib.game.Game;
 import com.github.bhlangonijr.chesslib.move.Move;
-import com.github.bhlangonijr.chesslib.move.MoveConversionException;
 import com.github.bhlangonijr.chesslib.move.MoveList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class AnalyzeGameJob implements Runnable {
 
@@ -40,12 +46,12 @@ public class AnalyzeGameJob implements Runnable {
 
         // We're either analyzing white, black or both (when target is blank).
         //
-        boolean analyzeWhite = targetPlayer == null
-                || targetPlayer.isEmpty()
+        Board board = new Board();
+
+        boolean analyzeWhite = targetPlayer == null || targetPlayer.isEmpty()
                 || targetPlayer.equals(game.getWhitePlayer().getName());
 
-        boolean analyzeBlack = targetPlayer == null
-                || targetPlayer.isEmpty()
+        boolean analyzeBlack = targetPlayer == null || targetPlayer.isEmpty()
                 || targetPlayer.equals(game.getBlackPlayer().getName());
 
         try {
@@ -59,24 +65,33 @@ public class AnalyzeGameJob implements Runnable {
             MoveList moves = new MoveList();
             moves.loadFromSan(moveText);
 
-            String[] engineMoves;
+            List<EvaluatedMove> evaluatedMoveList = new ArrayList<>();
             for (int i=0; i<moves.size(); i++) {
 
                 Move move = moves.get(i);
                 String fen = moves.getFen(i);
 
-                // Look at the previously calculated engine moves and the actual move that was made
-                //
+                board.getContext().setStartFEN(fen);
 
-                if (i >= OPENING_MOVES * 2) {
-                    engineMoves = engine.bestMoves(fen); // TODO ... work on getting actual best moves (T1, T2, T3)
-                    break;
+                if (i >= OPENING_MOVES * 2
+                        && ((analyzeWhite && Side.WHITE.equals(board.getSideToMove())
+                        || (analyzeBlack && Side.BLACK.equals(board.getSideToMove()))))) {
+
+                    EvaluatedMove evaluatedMove = engine.bestMoves(fen);
+                    evaluatedMove.setGameMove(move);
+                    evaluatedMoveList.add(evaluatedMove);
+
                 }
 
             }
 
-        } catch (MoveConversionException moveConversionException) {
-            throw new RuntimeException(moveConversionException);
+            // TESTING
+            evaluatedMoveList.forEach(EvaluatedMove::printEvaluation);
+
+        } catch (Throwable t) {
+            t.printStackTrace(System.err);
+        } finally {
+            PgnJ.recordFinished();
         }
 
     }
