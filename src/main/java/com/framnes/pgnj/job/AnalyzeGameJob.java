@@ -59,13 +59,17 @@ public class AnalyzeGameJob implements Runnable {
             MoveList moves = new MoveList();
             moves.loadFromSan(moveText);
 
+            String[] engineMoves;
             for (int i=0; i<moves.size(); i++) {
 
                 Move move = moves.get(i);
                 String fen = moves.getFen(i);
 
+                // Look at the previously calculated engine moves and the actual move that was made
+                //
+
                 if (i >= OPENING_MOVES * 2) {
-                    engine.bestMove(fen); // TODO ... work on getting actual best moves (T1, T2, T3)
+                    engineMoves = engine.bestMoves(fen); // TODO ... work on getting actual best moves (T1, T2, T3)
                     break;
                 }
 

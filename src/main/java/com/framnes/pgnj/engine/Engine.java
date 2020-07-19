@@ -5,23 +5,34 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * An implementation of UCI protocol communicating with the chosen engine executable.
  */
 public class Engine {
 
+    final private static String BEST_MOVE_PATTERN = "info depth [0-9]+ seldepth [0-9]+ multipv ([0-9]+) " +
+            "score cp (-?[0-9]+) nodes [0-9]+ nps [0-9]+ hashfull [0-9]+ tbhits [0-9]+ time [0-9]+ pv ([a-h1-8]+).*";
+    final private static int THINK_TIME_MS = 15000;
+    final private static int VARIATIONS = 3;
+
+    final private Pattern bestMovePattern;
     final private BufferedReader input;
     final private BufferedWriter output;
     final private Process process;
 
     public Engine(String enginePath) {
 
+        bestMovePattern = Pattern.compile(BEST_MOVE_PATTERN);
+
         try {
             process = Runtime.getRuntime().exec(enginePath);
             input = new BufferedReader(new InputStreamReader(process.getInputStream()));
             output = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
             sendCommand("uci");
+            sendCommand("setoption name MultiPV value " + VARIATIONS);
         } catch (IOException e) {
             throw new RuntimeException("Unable to start and bind engine process: ", e);
         }
@@ -38,10 +49,10 @@ public class Engine {
         return isReady();
     }
 
-    public void bestMove(String fen) {
+    public String[] bestMoves(String fen) {
         sendCommand("position fen " + fen);
-        sendCommand("go depth 10 movetime 5000");
-        hasResponse("");
+        sendCommand("go movetime " + THINK_TIME_MS);
+        return readBestMoves();
     }
 
     /**
@@ -79,6 +90,29 @@ public class Engine {
         return input.lines()
                 .peek((line) -> System.out.println( " [ENGINE] <<< " + line))
                 .anyMatch(expected::equals);
+    }
+
+    /**
+     * Read output from engine until we
+     *
+     * @return an String[] of the best moves (best at 0, decreasing...)
+     */
+    private String[] readBestMoves() {
+
+        String[] moves = new String[VARIATIONS];
+
+        input.lines()
+                .peek((line) -> System.out.println( " [ENGINE] <<< " + line))
+                .peek((output) -> {
+                    Matcher match = bestMovePattern.matcher(output);
+                    if (match.matches()) {
+                        moves[Integer.parseInt(match.group(1))-1] = match.group(3);
+                    }
+                })
+                .anyMatch((line) -> line.contains("bestmove"));
+
+        return moves;
+
     }
 
 }
