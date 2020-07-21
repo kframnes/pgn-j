@@ -16,8 +16,8 @@ import java.util.regex.Pattern;
  */
 public class Engine {
 
-    final private static String BEST_MOVE_PATTERN = ".*?multipv ([0-9]+) score cp (-?[0-9]+).*?pv ([a-h1-8]+).*";
-    final private static String BEST_MATE_PATTERN = ".*?multipv ([0-9]+) score mate (-?[0-9]+).*?pv ([a-h1-8]+).*";
+    final private static String BEST_MOVE_PATTERN = ".*?multipv ([0-9]+) score cp (-?[0-9]+).*?pv ([a-h1-8]+[bnrq]?).*";
+    final private static String BEST_MATE_PATTERN = ".*?multipv ([0-9]+) score mate (-?[0-9]+).*?pv ([a-h1-8]+[bnrq]?).*";
     //final private static int THINK_TIME_MS = 10000;
     final private static int DEPTH = 20;
     final private static int VARIATIONS = 3;
@@ -108,7 +108,7 @@ public class Engine {
         EngineMove[] moves = new EngineMove[VARIATIONS];
 
         input.lines()
-                .peek((line) -> System.out.println( " [ENGINE] <<< " + line))
+                //.peek((line) -> System.out.println( " [ENGINE] <<< " + line))
                 .peek((output) -> {
                     Matcher match = bestMovePattern.matcher(output);
                     if (match.matches()) {
@@ -117,8 +117,8 @@ public class Engine {
 
                         Matcher mate = bestMatePattern.matcher(output);
                         if (mate.matches()) {
-                            int mateInCoefficient = Integer.parseInt(match.group(2)) < 0 ? -1 : 1;
-                            moves[Integer.parseInt(mate.group(1)) - 1] = new EngineMove(mate.group(3), 1000 * mateInCoefficient);
+                            moves[Integer.parseInt(mate.group(1)) - 1] = new EngineMove(mate.group(3),
+                                    1000 * Integer.parseInt(mate.group(2)));
                         }
 
                     }

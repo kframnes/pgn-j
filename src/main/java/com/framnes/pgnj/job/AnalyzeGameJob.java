@@ -3,7 +3,7 @@ package com.framnes.pgnj.job;
 import com.framnes.pgnj.PgnJ;
 import com.framnes.pgnj.engine.Engine;
 import com.framnes.pgnj.evaluation.EvaluatedMove;
-import com.github.bhlangonijr.chesslib.Board;
+import com.framnes.pgnj.stats.Stats;
 import com.github.bhlangonijr.chesslib.Side;
 import com.github.bhlangonijr.chesslib.game.Game;
 import com.github.bhlangonijr.chesslib.move.Move;
@@ -19,23 +19,35 @@ public class AnalyzeGameJob implements Runnable {
     private final String enginePath;
     private final String targetPlayer;
     private final Game game;
+    private final Side side;
 
-    public AnalyzeGameJob(String enginePath, String targetPlayer, Game game) {
+    private final Stats stats;
+
+    public AnalyzeGameJob(String enginePath, String targetPlayer, Game game, Stats stats) {
         this.enginePath = enginePath;
         this.targetPlayer = targetPlayer;
         this.game = game;
-    }
 
-    public void describeJob() {
-        System.out.println(
-            String.format(
-                "Analyzing %s - %s ...", game.getWhitePlayer().getName(), game.getBlackPlayer().getName()
-            )
-        );
+        this.stats = stats;
+
+        if (targetPlayer.equals(game.getWhitePlayer().getName())) {
+            this.side = Side.WHITE;
+        } else if (targetPlayer.equals(game.getBlackPlayer().getName())) {
+            this.side = Side.BLACK;
+        } else {
+            side = null;
+        }
+
     }
 
     @Override
     public void run() {
+
+        System.out.println(
+            String.format(
+                    "Analyzing %s - %s ", game.getWhitePlayer().getName(), game.getBlackPlayer().getName()
+            )
+        );
 
         // Initialize engine.
         //
@@ -43,16 +55,6 @@ public class AnalyzeGameJob implements Runnable {
         if (!engine.startNewGame()) {
             throw new RuntimeException("There was a problem communicating with the engine");
         }
-
-        // We're either analyzing white, black or both (when target is blank).
-        //
-        Board board = new Board();
-
-        boolean analyzeWhite = targetPlayer == null || targetPlayer.isEmpty()
-                || targetPlayer.equals(game.getWhitePlayer().getName());
-
-        boolean analyzeBlack = targetPlayer == null || targetPlayer.isEmpty()
-                || targetPlayer.equals(game.getBlackPlayer().getName());
 
         try {
 
@@ -65,27 +67,39 @@ public class AnalyzeGameJob implements Runnable {
             MoveList moves = new MoveList();
             moves.loadFromSan(moveText);
 
+            // Evaluate moves.
+            //
             List<EvaluatedMove> evaluatedMoveList = new ArrayList<>();
             for (int i=0; i<moves.size(); i++) {
 
+                String fen = i==0 ? moves.getStartFen() : moves.getFen(i);
                 Move move = moves.get(i);
-                String fen = moves.getFen(i);
 
-                board.getContext().setStartFEN(fen);
+                EvaluatedMove evaluatedMove = engine.bestMoves(fen);
+                evaluatedMove.setGameMove(move);
 
-                if (i >= OPENING_MOVES * 2
-                        && ((analyzeWhite && Side.WHITE.equals(board.getSideToMove())
-                        || (analyzeBlack && Side.BLACK.equals(board.getSideToMove()))))) {
-
-                    EvaluatedMove evaluatedMove = engine.bestMoves(fen);
-                    evaluatedMove.setGameMove(move);
-                    evaluatedMoveList.add(evaluatedMove);
-
+                if (evaluatedMoveList.size() > 0) {
+                    EvaluatedMove lastMove = evaluatedMoveList.get(evaluatedMoveList.size()-1);
+                    lastMove.setGameMoveEvaluation(evaluatedMove.getPositionEvaluation() * -1); // flip perspective
+                    stats.addEvaluatedMove(lastMove);
                 }
+
+                evaluatedMoveList.add(evaluatedMove);
 
             }
 
-            // TESTING
+            // Evaluate final position.
+            //
+            String finalFen = moves.getFen(moves.size());
+            EvaluatedMove evaluatedMove = engine.bestMoves(finalFen);
+            if (evaluatedMoveList.size() > 1) {
+                EvaluatedMove lastMove = evaluatedMoveList.get(evaluatedMoveList.size()-1);
+                lastMove.setGameMoveEvaluation(evaluatedMove.getPositionEvaluation());
+            }
+
+            // Add analysis to Stats object.
+            //
+            //stats.addEvaluatedMoves(evaluatedMoveList, side);
             evaluatedMoveList.forEach(EvaluatedMove::printEvaluation);
 
         } catch (Throwable t) {

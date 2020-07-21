@@ -1,6 +1,7 @@
 package com.framnes.pgnj;
 
 import com.framnes.pgnj.job.AnalyzeGameJob;
+import com.framnes.pgnj.stats.Stats;
 import com.github.bhlangonijr.chesslib.pgn.PgnHolder;
 
 import java.util.concurrent.ExecutorService;
@@ -46,11 +47,10 @@ public class PgnJ {
     /**
      * Using the defined engine, analyze the target players games from PGN file.
      */
-    public void analyze() {
+    public void analyze(Stats stats) {
 
         games.getGame().stream()
-                .map((game) -> new AnalyzeGameJob(enginePath, targetPlayer, game))
-                .peek(AnalyzeGameJob::describeJob)
+                .map((game) -> new AnalyzeGameJob(enginePath, targetPlayer, game, stats))
                 .forEach(executor::submit);
 
     }
@@ -66,13 +66,6 @@ public class PgnJ {
         }
     }
 
-    /**
-     * Output report on target players accuracy.
-     */
-    public void report() {
-
-    }
-
     public void destroy() {
         executor.shutdown();
         executor.shutdownNow();
@@ -82,10 +75,12 @@ public class PgnJ {
 
         String enginePath = System.getProperty("enginePath");
         String pgnPath = System.getProperty("pgnPath");
-        String targetPlayer = "keithframnes";
+        String targetPlayer = "pointwins1";
 
         PgnJ pgnJ = new PgnJ(enginePath, pgnPath, targetPlayer);
-        pgnJ.analyze();
+        Stats stats = new Stats(3);
+
+        pgnJ.analyze(stats);
 
         synchronized (LOCK) {
             try {
@@ -95,6 +90,7 @@ public class PgnJ {
             }
         }
 
+        stats.outputEvaluation();
         pgnJ.destroy();
 
     }
