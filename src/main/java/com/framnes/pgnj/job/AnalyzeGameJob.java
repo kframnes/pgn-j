@@ -81,7 +81,6 @@ public class AnalyzeGameJob implements Runnable {
                 if (evaluatedMoveList.size() > 0) {
                     EvaluatedMove lastMove = evaluatedMoveList.get(evaluatedMoveList.size()-1);
                     lastMove.setGameMoveEvaluation(evaluatedMove.getPositionEvaluation() * -1); // flip perspective
-                    stats.addEvaluatedMove(lastMove);
                 }
 
                 evaluatedMoveList.add(evaluatedMove);
@@ -99,7 +98,7 @@ public class AnalyzeGameJob implements Runnable {
 
             // Add analysis to Stats object.
             //
-            //stats.addEvaluatedMoves(evaluatedMoveList, side);
+            stats.addEvaluatedMoves(evaluatedMoveList, side, OPENING_MOVES);
             evaluatedMoveList.forEach(EvaluatedMove::printEvaluation);
 
         } catch (Throwable t) {

@@ -43,11 +43,11 @@ public class EvaluatedMove {
         this.gameMoveEvaluation = gameMoveEvaluation;
     }
 
-    /**
-     *
-     *
-     * @return
-     */
+    public int getCpLoss() {
+        // Integer.MAX_VALUE == getGameMoveEvaluation() means the position was mate.
+        return getPositionEvaluation() < getGameMoveEvaluation() ? 0 : getGameMoveEvaluation() - getPositionEvaluation();
+    }
+
     public int getEngineMatchIndex() {
 
         for (int i=0; i<engineMoves.length; i++) {
@@ -59,10 +59,6 @@ public class EvaluatedMove {
 
     }
 
-    /**
-     *
-     *
-     */
     public void printEvaluation() {
         System.out.println(String.format("[%d] %s / %s --> %s [ %s | %s | %s ]",
                 positionEvaluation,

@@ -3,11 +3,7 @@ package com.framnes.pgnj.engine;
 import com.framnes.pgnj.evaluation.EngineMove;
 import com.framnes.pgnj.evaluation.EvaluatedMove;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,6 +14,7 @@ public class Engine {
 
     final private static String BEST_MOVE_PATTERN = ".*?multipv ([0-9]+) score cp (-?[0-9]+).*?pv ([a-h1-8]+[bnrq]?).*";
     final private static String BEST_MATE_PATTERN = ".*?multipv ([0-9]+) score mate (-?[0-9]+).*?pv ([a-h1-8]+[bnrq]?).*";
+    final private static String CHECKMATE_PATTERN = "info depth 0 score mate 0";
     //final private static int THINK_TIME_MS = 10000;
     final private static int DEPTH = 20;
     final private static int VARIATIONS = 3;
@@ -110,18 +107,27 @@ public class Engine {
         input.lines()
                 //.peek((line) -> System.out.println( " [ENGINE] <<< " + line))
                 .peek((output) -> {
+
+                    if (output.equalsIgnoreCase(CHECKMATE_PATTERN)) {
+                        moves[0] = new EngineMove("###", Integer.MAX_VALUE);
+                        return;
+                    }
+
                     Matcher match = bestMovePattern.matcher(output);
                     if (match.matches()) {
-                        moves[Integer.parseInt(match.group(1))-1] = new EngineMove(match.group(3), Integer.parseInt(match.group(2)));
+                        moves[Integer.parseInt(match.group(1)) - 1] = new EngineMove(match.group(3), Integer.parseInt(match.group(2)));
                     } else {
 
                         Matcher mate = bestMatePattern.matcher(output);
                         if (mate.matches()) {
-                            moves[Integer.parseInt(mate.group(1)) - 1] = new EngineMove(mate.group(3),
-                                    1000 * Integer.parseInt(mate.group(2)));
+                            int mateIn = Integer.parseInt(mate.group(2));
+                            int mateEvaluation = 32767 - 1000 * Math.abs(mateIn);
+                            if (mateIn < 0) mateEvaluation *= -1;
+                            moves[Integer.parseInt(mate.group(1)) - 1] = new EngineMove(mate.group(3), mateEvaluation);
                         }
 
                     }
+
                 })
                 .anyMatch((line) -> line.contains("bestmove"));
 

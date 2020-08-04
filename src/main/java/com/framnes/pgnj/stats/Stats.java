@@ -13,17 +13,24 @@ public class Stats {
 
     // A two-dimensional array measuring T1, T2, ..., Tn moves; from each score range
     private int[][] tEvaluationCounts;
+    private int[] totalEvaluationCounts;
 
     // A total number of moves found for every range
     private int[] rangeCounts;
+    private int totalMoves;
 
     // A total of lost CPs found for every range (used to create average)
     private int[] rangeCpLoss;
+    private int totalCpLoss;
 
     public Stats(int variations) {
         tEvaluationCounts = new int[Range.values().length][variations];
         rangeCounts = new int[Range.values().length];
         rangeCpLoss = new int[Range.values().length];
+
+        totalEvaluationCounts = new int[variations];
+        totalMoves = 0;
+        totalCpLoss = 0;
 
     }
 
@@ -33,7 +40,7 @@ public class Stats {
      * @param moves the moves to consider
      * @param side the side to analyze
      */
-    public void addEvaluatedMoves(List<EvaluatedMove> moves, Side side) {
+    public void addEvaluatedMoves(List<EvaluatedMove> moves, Side side, int bookMoves) {
 
         for (int i=0; i<moves.size(); i++) {
 
@@ -54,7 +61,7 @@ public class Stats {
 
         System.out.println();
         System.out.println("=======================================================================================");
-        System.out.println(String.format("%-35s %-10s %-10s %-10s %-10s %-10s ", "Eval", "N", "CP-", "T1%", "T2%", "T3%"));
+        System.out.println(String.format("%-35s %-10s %-10s %-10s %-10s %-10s ", "Eval", "N", "AvgCP-", "T1%", "T2%", "T3%"));
         System.out.println("=======================================================================================");
         Range[] ranges = Range.values();
         for (int i = 0; i < ranges.length; i++) {
@@ -68,6 +75,17 @@ public class Stats {
             ));
         }
 
+        System.out.println("---------------------------------------------------------------------------------------");
+        System.out.println(String.format("%-35s %-10d %-10.2f %-10.2f %-10.2f %-10.2f ",
+                "All Positions",
+                totalMoves,
+                totalMoves > 0 ? (double) totalCpLoss / (double) totalMoves : 0.00,
+                totalMoves > 0 ? 100.0 * (double) totalEvaluationCounts[0] / (double) totalMoves : 0.00,
+                totalMoves > 0 ? 100.0 * (double) totalEvaluationCounts[1] / (double) totalMoves : 0.00,
+                totalMoves > 0 ? 100.0 * (double) totalEvaluationCounts[2] / (double) totalMoves : 0.00
+        ));
+
+
     }
 
     /**
@@ -75,16 +93,20 @@ public class Stats {
      *
      * @param move the move to consider
      */
-    synchronized public void addEvaluatedMove(EvaluatedMove move) {
+    synchronized private void addEvaluatedMove(EvaluatedMove move) {
 
         int rangeIndex = Range.getRangeIndex(move.getPositionEvaluation());
         if (rangeIndex > 0) {
             rangeCounts[rangeIndex]++;
-            rangeCpLoss[rangeIndex] += (move.getPositionEvaluation() - move.getGameMoveEvaluation());
+            rangeCpLoss[rangeIndex] += move.getCpLoss();
+
+            totalMoves++;
+            totalCpLoss += move.getCpLoss();
 
             int engineMoveIndex = move.getEngineMatchIndex();
             if (engineMoveIndex >= 0) {
                 tEvaluationCounts[rangeIndex][engineMoveIndex]++;
+                totalEvaluationCounts[engineMoveIndex]++;
             }
 
         }

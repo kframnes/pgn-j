@@ -75,7 +75,7 @@ public class PgnJ {
 
         String enginePath = System.getProperty("enginePath");
         String pgnPath = System.getProperty("pgnPath");
-        String targetPlayer = "pointwins1";
+        String targetPlayer = "Tiz2020";
 
         PgnJ pgnJ = new PgnJ(enginePath, pgnPath, targetPlayer);
         Stats stats = new Stats(3);
