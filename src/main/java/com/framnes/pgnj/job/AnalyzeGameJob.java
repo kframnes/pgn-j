@@ -45,7 +45,8 @@ public class AnalyzeGameJob implements Runnable {
 
         System.out.println(
             String.format(
-                    "Analyzing %s - %s ", game.getWhitePlayer().getName(), game.getBlackPlayer().getName()
+                    "Analyzing %s - %s [%s]", game.getWhitePlayer().getName(), game.getBlackPlayer().getName(),
+                    side != null ? side.name() : "BOTH"
             )
         );
 
@@ -99,7 +100,7 @@ public class AnalyzeGameJob implements Runnable {
             // Add analysis to Stats object.
             //
             stats.addEvaluatedMoves(evaluatedMoveList, side, OPENING_MOVES);
-            evaluatedMoveList.forEach(EvaluatedMove::printEvaluation);
+            //evaluatedMoveList.forEach(EvaluatedMove::printEvaluation);
 
         } catch (Throwable t) {
             t.printStackTrace(System.err);

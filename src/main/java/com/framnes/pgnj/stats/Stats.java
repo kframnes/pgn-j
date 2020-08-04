@@ -11,6 +11,8 @@ import java.util.function.IntPredicate;
  */
 public class Stats {
 
+    private final int variations;
+
     // A two-dimensional array measuring T1, T2, ..., Tn moves; from each score range
     private int[][] tEvaluationCounts;
     private int[] totalEvaluationCounts;
@@ -24,6 +26,9 @@ public class Stats {
     private int totalCpLoss;
 
     public Stats(int variations) {
+
+        this.variations = variations;
+
         tEvaluationCounts = new int[Range.values().length][variations];
         rangeCounts = new int[Range.values().length];
         rangeCpLoss = new int[Range.values().length];
@@ -45,8 +50,8 @@ public class Stats {
 
         for (int i=bookMoves*2; i<moves.size(); i++) {
 
-            if (Side.WHITE.equals(side) && i % 2 == 1) continue;
-            if (Side.BLACK.equals(side) && i % 2 == 0) continue;
+            if (side != null && Side.WHITE.equals(side) && i % 2 == 1) continue;
+            if (side != null && Side.BLACK.equals(side) && i % 2 == 0) continue;
 
             EvaluatedMove evaluatedMove = moves.get(i);
             addEvaluatedMove(evaluatedMove);
@@ -106,8 +111,10 @@ public class Stats {
 
             int engineMoveIndex = move.getEngineMatchIndex();
             if (engineMoveIndex >= 0) {
-                tEvaluationCounts[rangeIndex][engineMoveIndex]++;
-                totalEvaluationCounts[engineMoveIndex]++;
+                for (int eMove = engineMoveIndex; eMove < variations; eMove++) {
+                    tEvaluationCounts[rangeIndex][eMove]++;
+                    totalEvaluationCounts[eMove]++;
+                }
             }
 
         }
@@ -119,15 +126,17 @@ public class Stats {
      */
     enum Range {
 
-        CRUSHED( eval -> eval < -900 , "Losing by more than a Queen"),
-        ROOK_DOWN( eval -> -900 < eval && eval < -500, "Losing by a Rook" ),
+        MATED( eval -> eval <= -2000,  "Opponent has forced mate" ),
+        CRUSHED( eval -> -2000 < eval && eval <= -900 , "Losing by more than a Queen"),
+        ROOK_DOWN( eval -> -900 < eval && eval <= -500, "Losing by a Rook" ),
         PIECE_DOWN( eval -> -500 < eval && eval <= -300, "Losing by a Piece" ),
         PAWNS_DOWN( eval -> -300 < eval && eval <= -100, "Losing by some pawns" ),
         EVEN( eval -> -100 <= eval && eval <= 100, "Even (+/- 100 CP)" ),
         PAWNS_UP( eval -> 100 <= eval && eval < 300, "Winning by some pawns" ),
         PIECE_UP( eval -> 300 <= eval && eval < 500, "Winning by a Piece" ),
         ROOK_UP( eval -> 500 <= eval && eval < 900, "Winning by a Rook" ),
-        CRUSHING( eval -> 900 < eval, "Winning by more than a Queen" )
+        CRUSHING( eval -> 900 <= eval && eval < 2000, "Winning by more than a Queen" ),
+        MATING( eval -> eval >= 2000,  "Player has forced mate"),
         ;
 
         IntPredicate predicate;
