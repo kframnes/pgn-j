@@ -39,10 +39,11 @@ public class Stats {
      *
      * @param moves the moves to consider
      * @param side the side to analyze
+     * @param bookMoves the number of moves to skip (as book moves)
      */
     public void addEvaluatedMoves(List<EvaluatedMove> moves, Side side, int bookMoves) {
 
-        for (int i=0; i<moves.size(); i++) {
+        for (int i=bookMoves*2; i<moves.size(); i++) {
 
             if (Side.WHITE.equals(side) && i % 2 == 1) continue;
             if (Side.BLACK.equals(side) && i % 2 == 0) continue;
