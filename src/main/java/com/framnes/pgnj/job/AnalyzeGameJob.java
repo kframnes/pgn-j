@@ -17,7 +17,6 @@ public class AnalyzeGameJob implements Runnable {
     private final static int OPENING_MOVES = 5;
 
     private final String enginePath;
-    private final String targetPlayer;
     private final Game game;
     private final Side side;
 
@@ -25,7 +24,6 @@ public class AnalyzeGameJob implements Runnable {
 
     public AnalyzeGameJob(String enginePath, String targetPlayer, Game game, Stats stats) {
         this.enginePath = enginePath;
-        this.targetPlayer = targetPlayer;
         this.game = game;
 
         this.stats = stats;
@@ -100,7 +98,6 @@ public class AnalyzeGameJob implements Runnable {
             // Add analysis to Stats object.
             //
             stats.addEvaluatedMoves(evaluatedMoveList, side, OPENING_MOVES);
-            //evaluatedMoveList.forEach(EvaluatedMove::printEvaluation);
 
         } catch (Throwable t) {
             t.printStackTrace(System.err);

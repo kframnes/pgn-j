@@ -16,7 +16,7 @@ public class Engine {
     final private static String BEST_MATE_PATTERN = ".*?multipv ([0-9]+) score mate (-?[0-9]+).*?pv ([a-h1-8]+[bnrq]?).*";
     final private static String CHECKMATE_PATTERN = "info depth 0 score mate 0";
     //final private static int THINK_TIME_MS = 10000;
-    final private static int DEPTH = 10;
+    final private static int DEPTH = 20;
     final private static int VARIATIONS = 3;
 
     final private Pattern bestMovePattern;

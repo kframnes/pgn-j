@@ -56,7 +56,8 @@ public class PgnJ {
     }
 
     /**
-     *
+     * In order to know when to stop running we count how many games were given to us for analysis and after each game
+     * has completed we have it decrement a counter.  Once we reach 0 we release the lock.
      */
     public static void recordFinished() {
         if (COUNT.decrementAndGet() == 0) {
@@ -66,6 +67,9 @@ public class PgnJ {
         }
     }
 
+    /**
+     * Shut down the executor.
+     */
     public void destroy() {
         executor.shutdown();
         executor.shutdownNow();
