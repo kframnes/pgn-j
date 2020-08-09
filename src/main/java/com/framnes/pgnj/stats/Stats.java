@@ -3,6 +3,7 @@ package com.framnes.pgnj.stats;
 import com.framnes.pgnj.evaluation.EvaluatedMove;
 import com.github.bhlangonijr.chesslib.Side;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.function.IntPredicate;
 
@@ -12,18 +13,29 @@ import java.util.function.IntPredicate;
 public class Stats {
 
     private final int variations;
+    private Duration duration;
 
-    // A two-dimensional array measuring T1, T2, ..., Tn moves; from each score range
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // T-ANALYSIS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // The total number of moves that matched a given engine move (1st, 2nd, 3rd, etc); per evaluation range of position
     private int[][] tEvaluationCounts;
+
+    // The total number of moves that matched a given engine move (1st, 2nd, 3rd, etc); regardless of evaluation
     private int[] totalEvaluationCounts;
 
-    // A total number of moves found for every range
+    // The total number of moves that were found to be in each evaluation range
     private int[] rangeCounts;
+
+    // The total number of moves
     private int totalMoves;
 
-    // A total of lost CPs found for every range (used to create average)
+    // State to track values for CP loss calculations
     private int[] rangeCpLoss;
+    private int[] rangeCpCounts;
     private int totalCpLoss;
+    private int totalCpMoves;
 
     public Stats(int variations) {
 
@@ -32,10 +44,12 @@ public class Stats {
         tEvaluationCounts = new int[Range.values().length][variations];
         rangeCounts = new int[Range.values().length];
         rangeCpLoss = new int[Range.values().length];
+        rangeCpCounts = new int[Range.values().length];
 
         totalEvaluationCounts = new int[variations];
         totalMoves = 0;
         totalCpLoss = 0;
+        totalCpMoves = 0;
 
     }
 
@@ -60,6 +74,10 @@ public class Stats {
 
     }
 
+    public void addTiming(long elapsedSeconds) {
+        this.duration = Duration.ofSeconds(elapsedSeconds);
+    }
+
     /**
      * Prints results of the PGN evaluation.
      */
@@ -74,7 +92,7 @@ public class Stats {
             System.out.println(String.format("%-35s %-10d %-10.2f %-10.2f %-10.2f %-10.2f ",
                     ranges[i].description,
                     rangeCounts[i],
-                    rangeCounts[i] > 0 ? (double) rangeCpLoss[i] / (double) rangeCounts[i] : 0.00,
+                    rangeCpCounts[i] > 0 ? (double) rangeCpLoss[i] / (double) rangeCpCounts[i] : 0.00,
                     rangeCounts[i] > 0 ? 100.0 * (double) tEvaluationCounts[i][0] / (double) rangeCounts[i] : 0.00,
                     rangeCounts[i] > 0 ? 100.0 * (double) tEvaluationCounts[i][1] / (double) rangeCounts[i] : 0.00,
                     rangeCounts[i] > 0 ? 100.0 * (double) tEvaluationCounts[i][2] / (double) rangeCounts[i] : 0.00
@@ -85,12 +103,14 @@ public class Stats {
         System.out.println(String.format("%-35s %-10d %-10.2f %-10.2f %-10.2f %-10.2f ",
                 "All Positions",
                 totalMoves,
-                totalMoves > 0 ? (double) totalCpLoss / (double) totalMoves : 0.00,
+                totalCpMoves > 0 ? (double) totalCpLoss / (double) totalCpMoves : 0.00,
                 totalMoves > 0 ? 100.0 * (double) totalEvaluationCounts[0] / (double) totalMoves : 0.00,
                 totalMoves > 0 ? 100.0 * (double) totalEvaluationCounts[1] / (double) totalMoves : 0.00,
                 totalMoves > 0 ? 100.0 * (double) totalEvaluationCounts[2] / (double) totalMoves : 0.00
         ));
 
+        System.out.println();
+        System.out.println(String.format("Analysis took %s", duration.toString()));
 
     }
 
@@ -103,17 +123,26 @@ public class Stats {
 
         int rangeIndex = Range.getRangeIndex(move.getPositionEvaluation());
         if (rangeIndex > 0) {
-            rangeCounts[rangeIndex]++;
-            rangeCpLoss[rangeIndex] += move.getCpLoss();
 
+            // count for CP-
+            if (move.includeForCpLoss()) {
+                rangeCpLoss[rangeIndex] += move.getCpLoss();
+                totalCpLoss += move.getCpLoss();
+                rangeCpCounts[rangeIndex]++;
+                totalCpMoves++;
+            }
+
+            // count for T%
+            rangeCounts[rangeIndex]++;
             totalMoves++;
-            totalCpLoss += move.getCpLoss();
 
             int engineMoveIndex = move.getEngineMatchIndex();
             if (engineMoveIndex >= 0) {
                 for (int eMove = engineMoveIndex; eMove < variations; eMove++) {
-                    tEvaluationCounts[rangeIndex][eMove]++;
-                    totalEvaluationCounts[eMove]++;
+                    if (move.includeForTAnalysis(eMove)) {
+                        tEvaluationCounts[rangeIndex][eMove]++;
+                        totalEvaluationCounts[eMove]++;
+                    }
                 }
             }
 

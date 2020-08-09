@@ -19,16 +19,8 @@ public class EvaluatedMove {
         this.positionEvaluation = engineMoves[0] != null ? engineMoves[0].getEvaluation() : 0;
     }
 
-    public EngineMove[] getEngineMoves() {
-        return engineMoves;
-    }
-
     public int getPositionEvaluation() {
         return positionEvaluation;
-    }
-
-    public Move getGameMove() {
-        return gameMove;
     }
 
     public void setGameMove(Move gameMove) {
@@ -43,8 +35,34 @@ public class EvaluatedMove {
         this.gameMoveEvaluation = gameMoveEvaluation;
     }
 
+    /**
+     * Should the stats consider this move for CP loss purposes.
+     *
+     * We make this determination based on whether the CP difference is negative (if it's positive then the position
+     * is mate) and whether or not the difference exceeds our threshhold (currently 1000).
+     *
+     * @return
+     */
+    public boolean includeForCpLoss() {
+        return getGameMoveEvaluation() - getPositionEvaluation() < 0
+                && getGameMoveEvaluation() - getPositionEvaluation() > -1000;
+    }
+
+    /**
+     * Should the stats consider this move for T[index] purposes.
+     *
+     * We make this determination by seeing if the move was forced (were there other choices).  So we exclude moves
+     * from T1 where there was no second option, from T2 when there was no third option, etc.
+     *
+     * @param index the engine move index being considered
+     * @return true if the move should be used; otherwise false
+     */
+    public boolean includeForTAnalysis(int index) {
+        if (index+1 == engineMoves.length) return true;
+        return index+1 < engineMoves.length && engineMoves[index+1] != null;
+    }
+
     public int getCpLoss() {
-        // Integer.MAX_VALUE == getGameMoveEvaluation() means the position was mate.
         return getPositionEvaluation() < getGameMoveEvaluation() ? 0 : getGameMoveEvaluation() - getPositionEvaluation();
     }
 
@@ -57,17 +75,6 @@ public class EvaluatedMove {
         }
         return -1;
 
-    }
-
-    public void printEvaluation() {
-        System.out.println(String.format("[%d] %s / %s --> %s [ %s | %s | %s ]",
-                positionEvaluation,
-                gameMove.getSan(),
-                gameMove.toString(),
-                gameMoveEvaluation,
-                engineMoves[0] != null ? engineMoves[0].getMove() : "--",
-                engineMoves[1] != null ? engineMoves[1].getMove() : "--",
-                engineMoves[2] != null ? engineMoves[2].getMove() : "--"));
     }
 
 }

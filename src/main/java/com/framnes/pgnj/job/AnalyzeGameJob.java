@@ -103,6 +103,7 @@ public class AnalyzeGameJob implements Runnable {
             t.printStackTrace(System.err);
         } finally {
             PgnJ.recordFinished();
+            engine.shutdown();
         }
 
     }

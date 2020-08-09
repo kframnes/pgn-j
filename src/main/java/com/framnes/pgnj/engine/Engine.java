@@ -3,7 +3,12 @@ package com.framnes.pgnj.engine;
 import com.framnes.pgnj.evaluation.EngineMove;
 import com.framnes.pgnj.evaluation.EvaluatedMove;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,15 +20,15 @@ public class Engine {
     final private static String BEST_MOVE_PATTERN = ".*?multipv ([0-9]+) score cp (-?[0-9]+).*?pv ([a-h1-8]+[bnrq]?).*";
     final private static String BEST_MATE_PATTERN = ".*?multipv ([0-9]+) score mate (-?[0-9]+).*?pv ([a-h1-8]+[bnrq]?).*";
     final private static String CHECKMATE_PATTERN = "info depth 0 score mate 0";
-    //final private static int THINK_TIME_MS = 10000;
-    final private static int DEPTH = 20;
+    final private static int DEPTH = 12;
     final private static int VARIATIONS = 3;
 
     final private Pattern bestMovePattern;
     final private Pattern bestMatePattern;
-    final private BufferedReader input;
-    final private BufferedWriter output;
-    final private Process process;
+
+    private BufferedReader input;
+    private BufferedWriter output;
+    private Process process;
 
     public Engine(String enginePath) {
 
@@ -36,6 +41,8 @@ public class Engine {
             output = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
             sendCommand("uci");
             sendCommand("setoption name MultiPV value " + VARIATIONS);
+            sendCommand("setoption name Threads value 1");
+            sendCommand("setoption name Hash value 1024");
         } catch (IOException e) {
             throw new RuntimeException("Unable to start and bind engine process: ", e);
         }
@@ -133,6 +140,18 @@ public class Engine {
 
         return new EvaluatedMove(moves);
 
+    }
+
+    public void shutdown() {
+        closeQuietly(input);
+        closeQuietly(output);
+        process.destroy();
+    }
+
+    private void closeQuietly(Closeable closeable) {
+        try {
+            if (closeable != null) closeable.close();
+        } catch (IOException e) {}
     }
 
 }

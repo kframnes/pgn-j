@@ -4,6 +4,7 @@ import com.framnes.pgnj.job.AnalyzeGameJob;
 import com.framnes.pgnj.stats.Stats;
 import com.github.bhlangonijr.chesslib.pgn.PgnHolder;
 
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,7 +41,7 @@ public class PgnJ {
 
         // Initialize executor service
         //
-        executor = Executors.newFixedThreadPool(5);
+        executor = Executors.newFixedThreadPool(4);
 
     }
 
@@ -48,11 +49,9 @@ public class PgnJ {
      * Using the defined engine, analyze the target players games from PGN file.
      */
     public void analyze(Stats stats) {
-
         games.getGame().stream()
                 .map((game) -> new AnalyzeGameJob(enginePath, targetPlayer, game, stats))
                 .forEach(executor::submit);
-
     }
 
     /**
@@ -77,6 +76,8 @@ public class PgnJ {
 
     public static void main(String [] args) {
 
+        long start = new Date().getTime();
+
         String enginePath = System.getProperty("enginePath");
         String pgnPath = System.getProperty("pgnPath");
         String targetPlayer = System.getProperty("player");
@@ -94,7 +95,11 @@ public class PgnJ {
             }
         }
 
+        long finish = new Date().getTime();
+
+        stats.addTiming(finish - start);
         stats.outputEvaluation();
+
         pgnJ.destroy();
 
     }
