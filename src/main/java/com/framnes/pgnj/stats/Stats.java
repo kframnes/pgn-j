@@ -75,7 +75,7 @@ public class Stats {
     }
 
     public void addTiming(long elapsedSeconds) {
-        this.duration = Duration.ofSeconds(elapsedSeconds);
+        this.duration = Duration.ofMillis(elapsedSeconds);
     }
 
     /**
