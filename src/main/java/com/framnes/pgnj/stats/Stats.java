@@ -122,7 +122,7 @@ public class Stats {
     synchronized private void addEvaluatedMove(EvaluatedMove move) {
 
         int rangeIndex = Range.getRangeIndex(move.getPositionEvaluation());
-        if (rangeIndex > 0) {
+        if (rangeIndex >= 0) {
 
             // count for CP-
             if (move.includeForCpLoss()) {
