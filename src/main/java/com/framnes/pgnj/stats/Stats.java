@@ -6,6 +6,8 @@ import com.github.bhlangonijr.chesslib.Side;
 import java.time.Duration;
 import java.util.List;
 import java.util.function.IntPredicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Class representing the compiled analysis and statistics for the given PGN.
@@ -19,33 +21,10 @@ public class Stats {
     // T-ANALYSIS
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // The total number of moves that matched a given engine move (1st, 2nd, 3rd, etc); per evaluation range of position
     private int[][] tEvaluationCounts;
-
-    // The total number of moves that matched a given engine move (1st, 2nd, 3rd, etc); regardless of evaluation
-    private int[] totalEvaluationCounts;
-
-    // The total number of moves that were found to be in each evaluation range
     private int[] rangeCounts;
-
-    // The total number of moves
-    private int totalMoves;
-
-    // Moves made from winning / losing positions
-    private int losingPositionMoves;
-    private int winningPositionMoves;
-    private int[] tCountsLosingPosition;
-    private int[] tCountsWinningPosition;
-
-    // State to track values for CP loss calculations
     private int[] rangeCpLoss;
     private int[] rangeCpCounts;
-    private int totalCpLossLosingPositions;
-    private int totalCpLossWinningPositions;
-    private int totalCpMovesLosingPositions;
-    private int totalCpMovesWinningPositions;
-    private int totalCpLoss;
-    private int totalCpMoves;
 
     public Stats(int variations) {
 
@@ -55,21 +34,6 @@ public class Stats {
         rangeCounts = new int[Range.values().length];
         rangeCpLoss = new int[Range.values().length];
         rangeCpCounts = new int[Range.values().length];
-
-        losingPositionMoves = 0;
-        winningPositionMoves = 0;
-        tCountsLosingPosition = new int[variations];
-        tCountsWinningPosition = new int[variations];
-
-        totalEvaluationCounts = new int[variations];
-        totalMoves = 0;
-        totalCpLoss = 0;
-        totalCpMoves = 0;
-
-        totalCpLossLosingPositions = 0;
-        totalCpLossWinningPositions = 0;
-        totalCpMovesLosingPositions = 0;
-        totalCpMovesWinningPositions = 0;
 
     }
 
@@ -119,34 +83,6 @@ public class Stats {
             ));
         }
 
-        System.out.println("---------------------------------------------------------------------------------------");
-        System.out.println(String.format("%-35s %-10d %-10.2f %-10.2f %-10.2f %-10.2f ",
-                "Losing",
-                losingPositionMoves,
-                totalCpMovesLosingPositions > 0 ? (double) totalCpLossLosingPositions / (double) totalCpMovesLosingPositions : 0.00,
-                losingPositionMoves > 0 ? 100.0 * (double) tCountsLosingPosition[0] / (double) losingPositionMoves : 0.00,
-                losingPositionMoves > 0 ? 100.0 * (double) tCountsLosingPosition[1] / (double) losingPositionMoves : 0.00,
-                losingPositionMoves > 0 ? 100.0 * (double) tCountsLosingPosition[2] / (double) losingPositionMoves : 0.00
-        ));
-        System.out.println(String.format("%-35s %-10d %-10.2f %-10.2f %-10.2f %-10.2f ",
-                "Winning",
-                winningPositionMoves,
-                totalCpMovesWinningPositions > 0 ? (double) totalCpLossWinningPositions / (double) totalCpMovesWinningPositions : 0.00,
-                winningPositionMoves > 0 ? 100.0 * (double) tCountsWinningPosition[0] / (double) winningPositionMoves : 0.00,
-                winningPositionMoves > 0 ? 100.0 * (double) tCountsWinningPosition[1] / (double) winningPositionMoves : 0.00,
-                winningPositionMoves > 0 ? 100.0 * (double) tCountsWinningPosition[2] / (double) winningPositionMoves : 0.00
-        ));
-
-        System.out.println("---------------------------------------------------------------------------------------");
-        System.out.println(String.format("%-35s %-10d %-10.2f %-10.2f %-10.2f %-10.2f ",
-                "All Positions",
-                totalMoves,
-                totalCpMoves > 0 ? (double) totalCpLoss / (double) totalCpMoves : 0.00,
-                totalMoves > 0 ? 100.0 * (double) totalEvaluationCounts[0] / (double) totalMoves : 0.00,
-                totalMoves > 0 ? 100.0 * (double) totalEvaluationCounts[1] / (double) totalMoves : 0.00,
-                totalMoves > 0 ? 100.0 * (double) totalEvaluationCounts[2] / (double) totalMoves : 0.00
-        ));
-
         System.out.println();
         System.out.println(String.format("Analysis took %s", duration.toString()));
 
@@ -159,51 +95,26 @@ public class Stats {
      */
     synchronized private void addEvaluatedMove(EvaluatedMove move) {
 
-        int rangeIndex = Range.getRangeIndex(move.getPositionEvaluation());
-        if (rangeIndex >= 0) {
+        List<Integer> rangeIndices = Range.getRangeIndices(move.getPositionEvaluation());
+        if (!rangeIndices.isEmpty()) {
+            for (Integer rangeIndex : rangeIndices) {
 
-            // count for CP-
-            if (move.includeForCpLoss()) {
-                rangeCpLoss[rangeIndex] += move.getCpLoss();
-                rangeCpCounts[rangeIndex]++;
-
-                if (Range.isWinning(rangeIndex)) {
-                    totalCpLossWinningPositions += move.getCpLoss();
-                    totalCpMovesWinningPositions++;
-                } else if (Range.isLosing(rangeIndex)) {
-                    totalCpLossLosingPositions += move.getCpLoss();
-                    totalCpMovesLosingPositions++;
+                if (move.includeForCpLoss()) {
+                    rangeCpLoss[rangeIndex] += move.getCpLoss();
+                    rangeCpCounts[rangeIndex]++;
                 }
 
-                totalCpLoss += move.getCpLoss();
-                totalCpMoves++;
+                rangeCounts[rangeIndex]++;
 
-            }
-
-            // count for T%
-            rangeCounts[rangeIndex]++;
-            if (Range.isWinning(rangeIndex)) {
-                winningPositionMoves++;
-            } else if (Range.isLosing(rangeIndex)) {
-                losingPositionMoves++;
-            }
-            totalMoves++;
-
-            int engineMoveIndex = move.getEngineMatchIndex();
-            if (engineMoveIndex >= 0) {
-                for (int eMove = engineMoveIndex; eMove < variations; eMove++) {
-                    if (move.includeForTAnalysis(eMove)) {
-                        tEvaluationCounts[rangeIndex][eMove]++;
-                        if (Range.isWinning(rangeIndex)) {
-                            tCountsWinningPosition[eMove]++;
-                        } else if (Range.isLosing(rangeIndex)) {
-                            tCountsLosingPosition[eMove]++;
+                int engineMoveIndex = move.getEngineMatchIndex();
+                if (engineMoveIndex >= 0) {
+                    for (int eMove = engineMoveIndex; eMove < variations; eMove++) {
+                        if (move.includeForTAnalysis(eMove)) {
+                            tEvaluationCounts[rangeIndex][eMove]++;
                         }
-                        totalEvaluationCounts[eMove]++;
                     }
                 }
             }
-
         }
 
     }
@@ -217,13 +128,19 @@ public class Stats {
         CRUSHED( eval -> -2000 < eval && eval <= -900 , "Losing by more than a Queen"),
         ROOK_DOWN( eval -> -900 < eval && eval <= -500, "Losing by a Rook" ),
         PIECE_DOWN( eval -> -500 < eval && eval <= -300, "Losing by a Piece" ),
-        PAWNS_DOWN( eval -> -300 < eval && eval <= -100, "Losing by some pawns" ),
+        PAWNS_DOWN( eval -> -300 < eval && eval < -100, "Losing by some pawns" ),
         EVEN( eval -> -100 <= eval && eval <= 100, "Even (+/- 100 CP)" ),
-        PAWNS_UP( eval -> 100 <= eval && eval < 300, "Winning by some pawns" ),
+        PAWNS_UP( eval -> 100 < eval && eval < 300, "Winning by some pawns" ),
         PIECE_UP( eval -> 300 <= eval && eval < 500, "Winning by a Piece" ),
         ROOK_UP( eval -> 500 <= eval && eval < 900, "Winning by a Rook" ),
         CRUSHING( eval -> 900 <= eval && eval < 2000, "Winning by more than a Queen" ),
         MATING( eval -> eval >= 2000,  "Player has forced mate"),
+
+        LOSING(eval -> eval < -100, "Losing"),
+        WINNING(eval -> eval > 100, "Winning"),
+
+        TOTAl(eval -> true, "Total")
+
         ;
 
         IntPredicate predicate;
@@ -235,24 +152,16 @@ public class Stats {
         }
 
         /**
-         * Returns the matching range of an evaluation.
+         * Returns the matching ranges of an evaluation.
          *
          * @param evaluation the evaluation to match.
-         * @return the index representing the matched range; otherwise -1
+         * @return the indeces representing the matched range; otherwise -1
          */
-        static int getRangeIndex(int evaluation) {
-            for (int i=0; i<values().length; i++) {
-                if (values()[i].predicate.test(evaluation)) return i;
-            }
-            return -1;
-        }
-
-        static boolean isWinning(int rangeIndex) {
-            return rangeIndex > 5 && rangeIndex <= 10;
-        }
-
-        static boolean isLosing(int rangeIndex) {
-            return rangeIndex >= 0 && rangeIndex < 5;
+        static List<Integer> getRangeIndices(int evaluation) {
+            return IntStream.range(0, values().length)
+                    .filter( i -> values()[i].predicate.test(evaluation) )
+                    .boxed()
+                    .collect(Collectors.toList());
         }
 
     }
