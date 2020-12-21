@@ -6,6 +6,7 @@ import com.framnes.pgnj.evaluation.EvaluatedMove;
 import com.framnes.pgnj.stats.Stats;
 import com.github.bhlangonijr.chesslib.Side;
 import com.github.bhlangonijr.chesslib.game.Game;
+import com.github.bhlangonijr.chesslib.game.GameResult;
 import com.github.bhlangonijr.chesslib.move.Move;
 import com.github.bhlangonijr.chesslib.move.MoveList;
 
@@ -97,7 +98,14 @@ public class AnalyzeGameJob implements Runnable {
 
             // Add analysis to Stats object.
             //
-            stats.addEvaluatedMoves(evaluatedMoveList, side, OPENING_MOVES);
+            if (game.getResult().equals(GameResult.WHITE_WON) && side.equals(Side.WHITE) ||
+                    game.getResult().equals(GameResult.BLACK_WON) && side.equals(Side.BLACK)) {
+                stats.addEvaluatedMoves(evaluatedMoveList, side, OPENING_MOVES, true);
+            } else if (!game.getResult().equals(GameResult.DRAW)){
+                stats.addEvaluatedMoves(evaluatedMoveList, side, OPENING_MOVES, false);
+            } else {
+                stats.addEvaluatedMoves(evaluatedMoveList, side, OPENING_MOVES);
+            }
 
         } catch (Throwable t) {
             t.printStackTrace(System.err);

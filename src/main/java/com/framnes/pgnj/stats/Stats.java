@@ -2,6 +2,7 @@ package com.framnes.pgnj.stats;
 
 import com.framnes.pgnj.evaluation.EvaluatedMove;
 import com.github.bhlangonijr.chesslib.Side;
+import com.github.bhlangonijr.chesslib.game.GameResult;
 
 import java.time.Duration;
 import java.util.List;
@@ -22,7 +23,13 @@ public class Stats {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     private int[][] tEvaluationCounts;
+    private int[][] tEvaluationCountsWonGames;
+    private int[][] tEvaluationCountsLostGames;
+
     private int[] rangeCounts;
+    private int[] rangeCountsWonGames;
+    private int[] rangeCountsLostGames;
+
     private int[] rangeCpLoss;
     private int[] rangeCpCounts;
 
@@ -35,6 +42,12 @@ public class Stats {
         rangeCpLoss = new int[Range.values().length];
         rangeCpCounts = new int[Range.values().length];
 
+        tEvaluationCountsWonGames = new int[Range.values().length][variations];
+        rangeCountsWonGames = new int[Range.values().length];
+
+        tEvaluationCountsLostGames = new int[Range.values().length][variations];
+        rangeCountsLostGames = new int[Range.values().length];
+
     }
 
     /**
@@ -43,8 +56,9 @@ public class Stats {
      * @param moves the moves to consider
      * @param side the side to analyze
      * @param bookMoves the number of moves to skip (as book moves)
+     * @param playerWon (optional) true if the analyzed player won, false if they lost lost; null for a draw.
      */
-    public void addEvaluatedMoves(List<EvaluatedMove> moves, Side side, int bookMoves) {
+    public void addEvaluatedMoves(List<EvaluatedMove> moves, Side side, int bookMoves, Boolean playerWon) {
 
         for (int i=bookMoves*2; i<moves.size(); i++) {
 
@@ -52,10 +66,14 @@ public class Stats {
             if (side != null && Side.BLACK.equals(side) && i % 2 == 0) continue;
 
             EvaluatedMove evaluatedMove = moves.get(i);
-            addEvaluatedMove(evaluatedMove);
+            addEvaluatedMove(evaluatedMove, playerWon);
 
         }
 
+    }
+
+    public void addEvaluatedMoves(List<EvaluatedMove> moves, Side side, int bookMoves) {
+        addEvaluatedMoves(moves, side, bookMoves, null);
     }
 
     public void addTiming(long elapsedSeconds) {
@@ -69,7 +87,7 @@ public class Stats {
 
         System.out.println();
         System.out.println("=======================================================================================");
-        System.out.println(String.format("%-35s %-10s %-10s %-10s %-10s %-10s ", "Eval", "N", "AvgCP-", "T1%", "T2%", "T3%"));
+        System.out.println(String.format("%-35s %-10s %-10s %-10s %-10s %-10s ", "Position Eval", "N", "AvgCP-", "T1%", "T2%", "T3%"));
         System.out.println("=======================================================================================");
         Range[] ranges = Range.values();
         for (int i = 0; i < ranges.length; i++) {
@@ -84,6 +102,36 @@ public class Stats {
         }
 
         System.out.println();
+        System.out.println("---------------------------------------------------------------------------------------");
+        System.out.println("  ONLY WINS");
+        System.out.println("---------------------------------------------------------------------------------------");
+        for (int i = 0; i < ranges.length; i++) {
+            System.out.println(String.format("%-35s %-10d %-10s %-10.2f %-10.2f %-10.2f ",
+                    ranges[i].description,
+                    rangeCountsWonGames[i],
+                    "N/A",
+                    rangeCountsWonGames[i] > 0 ? 100.0 * (double) tEvaluationCountsWonGames[i][0] / (double) rangeCountsWonGames[i] : 0.00,
+                    rangeCountsWonGames[i] > 0 ? 100.0 * (double) tEvaluationCountsWonGames[i][1] / (double) rangeCountsWonGames[i] : 0.00,
+                    rangeCountsWonGames[i] > 0 ? 100.0 * (double) tEvaluationCountsWonGames[i][2] / (double) rangeCountsWonGames[i] : 0.00
+            ));
+        }
+
+        System.out.println();
+        System.out.println("---------------------------------------------------------------------------------------");
+        System.out.println("  ONLY LOSES");
+        System.out.println("---------------------------------------------------------------------------------------");
+        for (int i = 0; i < ranges.length; i++) {
+            System.out.println(String.format("%-35s %-10d %-10s %-10.2f %-10.2f %-10.2f ",
+                    ranges[i].description,
+                    rangeCountsLostGames[i],
+                    "N/A",
+                    rangeCountsLostGames[i] > 0 ? 100.0 * (double) tEvaluationCountsLostGames[i][0] / (double) rangeCountsLostGames[i] : 0.00,
+                    rangeCountsLostGames[i] > 0 ? 100.0 * (double) tEvaluationCountsLostGames[i][1] / (double) rangeCountsLostGames[i] : 0.00,
+                    rangeCountsLostGames[i] > 0 ? 100.0 * (double) tEvaluationCountsLostGames[i][2] / (double) rangeCountsLostGames[i] : 0.00
+            ));
+        }
+
+        System.out.println();
         System.out.println(String.format("Analysis took %s", duration.toString()));
 
     }
@@ -92,8 +140,12 @@ public class Stats {
      * Adds an {@code EvaluatedMove} to the stats.
      *
      * @param move the move to consider
+     * @param playerWon (optional) true if the analyzed player won, false if they lost lost; null for a draw.
      */
-    synchronized private void addEvaluatedMove(EvaluatedMove move) {
+    synchronized private void addEvaluatedMove(EvaluatedMove move, Boolean playerWon) {
+
+        int[][] resultBasedEvaluationCounts = getResultBasedEvaluationCounts(playerWon);
+        int[] resultBasedRangeCounts = getResultBasedRangeCounts(playerWon);
 
         List<Integer> rangeIndices = Range.getRangeIndices(move.getPositionEvaluation());
         if (!rangeIndices.isEmpty()) {
@@ -105,18 +157,34 @@ public class Stats {
                 }
 
                 rangeCounts[rangeIndex]++;
+                resultBasedRangeCounts[rangeIndex]++;
 
                 int engineMoveIndex = move.getEngineMatchIndex();
                 if (engineMoveIndex >= 0) {
                     for (int eMove = engineMoveIndex; eMove < variations; eMove++) {
                         if (move.includeForTAnalysis(eMove)) {
                             tEvaluationCounts[rangeIndex][eMove]++;
+                            resultBasedEvaluationCounts[rangeIndex][eMove]++;
                         }
                     }
                 }
             }
         }
 
+    }
+
+    int[][] getResultBasedEvaluationCounts(Boolean playerWon) {
+        if (playerWon != null) {
+            return playerWon ? tEvaluationCountsWonGames : tEvaluationCountsLostGames;
+        }
+        return new int[Range.values().length][variations];
+    }
+
+    int[] getResultBasedRangeCounts(Boolean playerWon) {
+        if (playerWon != null) {
+            return playerWon ? rangeCountsWonGames : rangeCountsLostGames;
+        }
+        return new int[Range.values().length];
     }
 
     /**

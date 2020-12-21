@@ -1,30 +1,66 @@
 Example Evaluations @ depth 14
 -----------------------------------
+####Myself (Not a cheater)
 ```
-Myself (Not a cheater)
 =======================================================================================
-Eval                                N          AvgCP-     T1%        T2%        T3%        
+Position Eval                       N          AvgCP-     T1%        T2%        T3%        
 =======================================================================================
-Opponent has forced mate            102        -195.20    32.35      40.20      80.39      
-Losing by more than a Queen         91         -150.14    35.16      43.96      57.14      
-Losing by a Rook                    114        -136.47    35.09      44.74      57.89      
-Losing by a Piece                   118        -130.53    38.14      57.63      69.49      
-Losing by some pawns                203        -106.11    33.99      51.23      63.55      
-Even (+/- 100 CP)                   553        -100.33    37.43      52.98      63.83      
-Winning by some pawns               245        -101.95    37.14      53.06      66.94      
-Winning by a Piece                  69         -117.32    37.68      56.52      68.12      
-Winning by a Rook                   136        -105.01    44.12      64.71      70.59      
-Winning by more than a Queen        54         -131.55    53.70      70.37      77.78      
-Player has forced mate              32         -444.33    56.25      68.75      78.13      
-Losing                              628        -129.30    34.87      48.41      65.45      
-Winning                             536        -109.92    41.79      59.14      69.78      
-Total                               1717       -113.26    37.86      53.23      66.28
+Opponent has forced mate            66         -252.74    36.36      34.85      86.36      
+Losing by more than a Queen         74         -152.53    33.78      44.59      59.46      
+Losing by a Rook                    199        -109.40    32.16      42.71      62.81      
+Losing by a Piece                   108        -113.42    38.89      54.63      69.44      
+Losing by some pawns                187        -102.64    40.64      57.22      71.66      
+Even (+/- 100 CP)                   471        -100.94    36.94      53.50      65.61      
+Winning by some pawns               302        -110.01    36.42      56.29      69.54      
+Winning by a Piece                  92         -142.76    35.87      53.26      60.87      
+Winning by a Rook                   105        -164.73    47.62      64.76      76.19      
+Winning by more than a Queen        62         -182.85    48.39      64.52      72.58      
+Player has forced mate              54         -300.50    38.89      57.41      66.67      
+Losing                              634        -117.58    36.44      48.42      68.61      
+Winning                             615        -131.07    39.67      58.21      69.43      
+Total                               1720       -117.50    37.73      53.31      68.08      
 
-------------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+  ONLY WINS
+---------------------------------------------------------------------------------------
+Opponent has forced mate            0          N/A        0.00       0.00       0.00       
+Losing by more than a Queen         0          N/A        0.00       0.00       0.00       
+Losing by a Rook                    29         N/A        27.59      41.38      65.52      
+Losing by a Piece                   16         N/A        50.00      56.25      68.75      
+Losing by some pawns                56         N/A        42.86      58.93      71.43      
+Even (+/- 100 CP)                   182        N/A        39.56      58.24      67.03      
+Winning by some pawns               187        N/A        41.18      60.96      75.40      
+Winning by a Piece                  73         N/A        41.10      56.16      65.75      
+Winning by a Rook                   80         N/A        48.75      65.00      78.75      
+Winning by more than a Queen        60         N/A        50.00      66.67      75.00      
+Player has forced mate              54         N/A        38.89      57.41      66.67      
+Losing                              101        N/A        39.60      53.47      69.31      
+Winning                             454        N/A        43.39      61.23      73.35      
+Total                               737        N/A        41.93      59.43      71.23      
 
-Confirmed Cheaters
-=======================================================================================
-Eval                                N          AvgCP-     T1%        T2%        T3%        
+---------------------------------------------------------------------------------------
+  ONLY LOSES
+---------------------------------------------------------------------------------------
+Opponent has forced mate            39         N/A        46.15      48.72      87.18      
+Losing by more than a Queen         74         N/A        33.78      44.59      59.46      
+Losing by a Rook                    140        N/A        30.00      40.00      59.29      
+Losing by a Piece                   67         N/A        37.31      55.22      65.67      
+Losing by some pawns                84         N/A        38.10      55.95      70.24      
+Even (+/- 100 CP)                   207        N/A        33.82      51.69      64.73      
+Winning by some pawns               85         N/A        21.18      43.53      58.82      
+Winning by a Piece                  13         N/A        23.08      61.54      61.54      
+Winning by a Rook                   14         N/A        42.86      71.43      78.57      
+Winning by more than a Queen        2          N/A        0.00       0.00       0.00       
+Player has forced mate              0          N/A        0.00       0.00       0.00       
+Losing                              404        N/A        35.15      47.52      65.35      
+Winning                             114        N/A        23.68      48.25      60.53      
+Total                               725        N/A        32.97      48.83      64.41
+```
+
+####Confirmed Cheaters
+```
+ =======================================================================================
+Position Eval                       N          AvgCP-     T1%        T2%        T3%        
 =======================================================================================
 Opponent has forced mate            3          -29.50     100.00     100.00     100.00     
 Losing by more than a Queen         4          -351.50    25.00      25.00      50.00      
@@ -39,62 +75,97 @@ Winning by more than a Queen        124        -199.08    46.77      62.10      
 Player has forced mate              117        -209.07    46.15      62.39      77.78      
 Losing                              90         -152.48    26.67      44.44      57.78      
 Winning                             896        -114.01    48.44      64.40      76.45      
-Total                               1184       -112.96    45.69      61.99      74.49 
+Total                               1184       -112.96    45.69      61.99      74.49      
 
-=======================================================================================
-Eval                                N          AvgCP-     T1%        T2%        T3%        
-=======================================================================================
-Opponent has forced mate            5          0.00       0.00       20.00      100.00     
-Losing by more than a Queen         22         -203.00    40.91      45.45      68.18      
-Losing by a Rook                    101        -100.77    59.41      68.32      79.21      
-Losing by a Piece                   68         -94.00     54.41      73.53      83.82      
-Losing by some pawns                140        -101.47    40.71      57.86      75.71      
-Even (+/- 100 CP)                   459        -99.36     38.78      55.56      65.14      
-Winning by some pawns               334        -100.59    39.52      58.08      65.57      
-Winning by a Piece                  180        -104.78    37.22      56.11      69.44      
-Winning by a Rook                   201        -124.79    46.77      61.69      73.13      
-Winning by more than a Queen        119        -237.24    39.50      61.34      73.95      
-Player has forced mate              103        -420.36    49.51      66.02      79.61      
-Losing                              336        -105.34    48.51      62.80      78.27      
-Winning                             937        -126.08    41.73      59.77      70.54      
-Total                               1732       -114.32    42.26      59.24      70.61
+---------------------------------------------------------------------------------------
+  ONLY WINS
+---------------------------------------------------------------------------------------
+Opponent has forced mate            1          N/A        100.00     100.00     100.00     
+Losing by more than a Queen         2          N/A        50.00      50.00      50.00      
+Losing by a Rook                    4          N/A        25.00      50.00      50.00      
+Losing by a Piece                   7          N/A        42.86      57.14      57.14      
+Losing by some pawns                9          N/A        22.22      22.22      44.44      
+Even (+/- 100 CP)                   122        N/A        47.54      65.57      76.23      
+Winning by some pawns               219        N/A        50.23      73.06      83.56      
+Winning by a Piece                  101        N/A        52.48      68.32      78.22      
+Winning by a Rook                   213        N/A        50.70      61.03      73.71      
+Winning by more than a Queen        110        N/A        50.00      63.64      78.18      
+Player has forced mate              96         N/A        51.04      66.67      80.21      
+Losing                              23         N/A        34.78      43.48      52.17      
+Winning                             739        N/A        50.74      66.71      78.76      
+Total                               884        N/A        49.89      65.95      77.71      
 
-=======================================================================================
-Eval                                N          AvgCP-     T1%        T2%        T3%        
-=======================================================================================
-Opponent has forced mate            0          0.00       0.00       0.00       0.00       
-Losing by more than a Queen         0          0.00       0.00       0.00       0.00       
-Losing by a Rook                    0          0.00       0.00       0.00       0.00       
-Losing by a Piece                   3          -63.67     66.67      66.67      100.00     
-Losing by some pawns                6          -104.00    83.33      83.33      100.00     
-Even (+/- 100 CP)                   186        -56.25     56.99      78.49      89.78      
-Winning by some pawns               249        -66.19     68.67      87.95      95.18      
-Winning by a Piece                  98         -60.65     71.43      87.76      94.90      
-Winning by a Rook                   138        -58.78     74.64      88.41      96.38      
-Winning by more than a Queen        73         -112.55    79.45      90.41      95.89      
-Player has forced mate              69         -81.14     78.26      84.06      88.41      
-Losing                              9          -88.88     77.78      77.78      100.00     
-Winning                             627        -67.98     72.73      87.88      94.74      
-Total                               822        -65.00     69.22      85.64      93.67 
+---------------------------------------------------------------------------------------
+  ONLY LOSES
+---------------------------------------------------------------------------------------
+Opponent has forced mate            2          N/A        100.00     100.00     100.00     
+Losing by more than a Queen         2          N/A        0.00       0.00       50.00      
+Losing by a Rook                    15         N/A        13.33      40.00      66.67      
+Losing by a Piece                   12         N/A        8.33       25.00      25.00      
+Losing by some pawns                21         N/A        33.33      47.62      66.67      
+Even (+/- 100 CP)                   56         N/A        30.36      46.43      71.43      
+Winning by some pawns               75         N/A        37.33      56.00      68.00      
+Winning by a Piece                  23         N/A        43.48      52.17      56.52      
+Winning by a Rook                   10         N/A        50.00      60.00      60.00      
+Winning by more than a Queen        5          N/A        40.00      60.00      80.00      
+Player has forced mate              0          N/A        0.00       0.00       0.00       
+Losing                              52         N/A        23.08      40.38      57.69      
+Winning                             113        N/A        39.82      55.75      65.49      
+Total                               221        N/A        33.48      49.77      65.16
+```
 
-------------------------------------------------------------------------------------------------------------------------
+```
+=======================================================================================
+Position Eval                       N          AvgCP-     T1%        T2%        T3%        
+=======================================================================================
+Opponent has forced mate            15         -197.33    40.00      46.67      73.33      
+Losing by more than a Queen         54         -153.11    37.04      57.41      72.22      
+Losing by a Rook                    141        -90.47     46.81      65.25      78.72      
+Losing by a Piece                   78         -72.89     57.69      67.95      79.49      
+Losing by some pawns                136        -124.46    47.79      62.50      72.06      
+Even (+/- 100 CP)                   313        -111.38    45.05      59.42      69.33      
+Winning by some pawns               122        -84.22     57.38      72.13      77.87      
+Winning by a Piece                  90         -75.71     66.67      82.22      96.67      
+Winning by a Rook                   106        -85.42     64.15      81.13      85.85      
+Winning by more than a Queen        64         -108.29    59.38      82.81      90.63      
+Player has forced mate              40         -150.00    87.50      95.00      97.50      
+Losing                              424        -107.76    47.64      63.21      75.71      
+Winning                             422        -85.97     64.22      80.33      87.68      
+Total                               1159       -101.69    52.98      68.42      78.34      
 
-Fins0905
-=======================================================================================
-Eval                                N          AvgCP-     T1%        T2%        T3%        
-=======================================================================================
-Opponent has forced mate            1          0.00       0.00       100.00     100.00     
-Losing by more than a Queen         3          -615.00    33.33      66.67      66.67      
-Losing by a Rook                    3          -300.50    33.33      66.67      100.00     
-Losing by a Piece                   7          -160.17    28.57      71.43      85.71      
-Losing by some pawns                16         -100.27    25.00      75.00      87.50      
-Even (+/- 100 CP)                   438        -67.65     51.83      70.55      78.54      
-Winning by some pawns               380        -73.43     49.47      70.00      82.63      
-Winning by a Piece                  158        -94.02     58.86      75.32      82.28      
-Winning by a Rook                   186        -84.99     63.44      77.96      83.87      
-Winning by more than a Queen        109        -117.09    64.22      77.98      86.24      
-Player has forced mate              88         -289.70    65.91      82.95      89.77      
-Losing                              30         -153.38    26.67      73.33      86.67      
-Winning                             921        -87.56     57.22      74.70      83.93      
-Total                               1389       -81.81     54.86      73.36      82.29 
-``` 
+---------------------------------------------------------------------------------------
+  ONLY WINS
+---------------------------------------------------------------------------------------
+Opponent has forced mate            0          N/A        0.00       0.00       0.00       
+Losing by more than a Queen         24         N/A        50.00      70.83      83.33      
+Losing by a Rook                    22         N/A        63.64      81.82      86.36      
+Losing by a Piece                   14         N/A        50.00      85.71      92.86      
+Losing by some pawns                66         N/A        62.12      74.24      83.33      
+Even (+/- 100 CP)                   191        N/A        53.93      67.02      75.92      
+Winning by some pawns               102        N/A        63.73      79.41      84.31      
+Winning by a Piece                  89         N/A        67.42      83.15      96.63      
+Winning by a Rook                   106        N/A        64.15      81.13      85.85      
+Winning by more than a Queen        64         N/A        59.38      82.81      90.63      
+Player has forced mate              38         N/A        92.11      97.37      100.00     
+Losing                              126        N/A        58.73      76.19      84.92      
+Winning                             399        N/A        66.67      82.96      89.97      
+Total                               716        N/A        61.87      77.51      85.34      
+
+---------------------------------------------------------------------------------------
+  ONLY LOSES
+---------------------------------------------------------------------------------------
+Opponent has forced mate            15         N/A        40.00      46.67      73.33      
+Losing by more than a Queen         29         N/A        24.14      48.28      62.07      
+Losing by a Rook                    90         N/A        35.56      56.67      73.33      
+Losing by a Piece                   58         N/A        56.90      62.07      75.86      
+Losing by some pawns                41         N/A        26.83      43.90      58.54      
+Even (+/- 100 CP)                   84         N/A        20.24      34.52      47.62      
+Winning by some pawns               20         N/A        25.00      35.00      45.00      
+Winning by a Piece                  1          N/A        0.00       0.00       100.00     
+Winning by a Rook                   0          N/A        0.00       0.00       0.00       
+Winning by more than a Queen        0          N/A        0.00       0.00       0.00       
+Player has forced mate              1          N/A        0.00       100.00     100.00     
+Losing                              233        N/A        38.20      54.08      69.96      
+Winning                             22         N/A        22.73      36.36      50.00      
+Total                               339        N/A        32.74      48.08      63.13 
+```
