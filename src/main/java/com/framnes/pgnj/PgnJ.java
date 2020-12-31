@@ -29,9 +29,13 @@ public class PgnJ {
         this.targetPlayer = targetPlayer;
         this.enginePath = enginePath;
 
+        if (!pgnPath.endsWith("/")) {
+            pgnPath += "/";
+        }
+
         // Load PGN of games
         //
-        this.games = new PgnHolder(pgnPath);
+        this.games = new PgnHolder(pgnPath+targetPlayer+".pgn");
         try {
             games.loadPgn();
             COUNT = new AtomicInteger(games.getSize());
