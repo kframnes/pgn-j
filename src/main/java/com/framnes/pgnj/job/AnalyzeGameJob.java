@@ -20,6 +20,7 @@ public class AnalyzeGameJob implements Runnable {
     private final String enginePath;
     private final Game game;
     private final Side side;
+    private final int opponentElo;
 
     private final Stats stats;
 
@@ -31,10 +32,13 @@ public class AnalyzeGameJob implements Runnable {
 
         if (targetPlayer.equals(game.getWhitePlayer().getName())) {
             this.side = Side.WHITE;
+            this.opponentElo = game.getBlackPlayer().getElo();
         } else if (targetPlayer.equals(game.getBlackPlayer().getName())) {
             this.side = Side.BLACK;
+            this.opponentElo = game.getWhitePlayer().getElo();
         } else {
-            side = null;
+            this.side = null;
+            this.opponentElo = 0;
         }
 
     }
@@ -44,7 +48,7 @@ public class AnalyzeGameJob implements Runnable {
 
         System.out.println(
             String.format(
-                    "Analyzing %s - %s [%s]", game.getWhitePlayer().getName(), game.getBlackPlayer().getName(),
+                    "(%d) Analyzing %s - %s [%s]", PgnJ.PROGRESS.addAndGet(1), game.getWhitePlayer().getName(), game.getBlackPlayer().getName(),
                     side != null ? side.name() : "BOTH"
             )
         );
@@ -100,11 +104,11 @@ public class AnalyzeGameJob implements Runnable {
             //
             if (game.getResult().equals(GameResult.WHITE_WON) && side.equals(Side.WHITE) ||
                     game.getResult().equals(GameResult.BLACK_WON) && side.equals(Side.BLACK)) {
-                stats.addEvaluatedMoves(evaluatedMoveList, side, OPENING_MOVES, true);
+                stats.addEvaluatedMoves(evaluatedMoveList, side, OPENING_MOVES, true, opponentElo);
             } else if (!game.getResult().equals(GameResult.DRAW)){
-                stats.addEvaluatedMoves(evaluatedMoveList, side, OPENING_MOVES, false);
+                stats.addEvaluatedMoves(evaluatedMoveList, side, OPENING_MOVES, false, opponentElo);
             } else {
-                stats.addEvaluatedMoves(evaluatedMoveList, side, OPENING_MOVES);
+                stats.addEvaluatedMoves(evaluatedMoveList, side, OPENING_MOVES, null, opponentElo);
             }
 
         } catch (Throwable t) {

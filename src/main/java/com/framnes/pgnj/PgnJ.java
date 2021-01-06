@@ -22,6 +22,7 @@ public class PgnJ {
 
     public final static Object LOCK = new Object();
     public static AtomicInteger COUNT;
+    public static AtomicInteger PROGRESS = new AtomicInteger(0);
 
     private final ExecutorService executor;
 
