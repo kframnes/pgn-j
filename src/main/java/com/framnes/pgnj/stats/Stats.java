@@ -31,6 +31,14 @@ public class Stats {
     private int[] rangeCountsWonGames;
     private int[] rangeCountsLostGames;
 
+    private int winningToLosing = 0;
+    private int winningToLosingWonGames = 0;
+    private int winningToLosingLostGames = 0;
+
+    private int losingToWinning = 0;
+    private int losingToWinningWonGames = 0;
+    private int losingToWinningLostGames = 0;
+
     public Stats(int variations) {
 
         this.variations = variations;
@@ -65,6 +73,29 @@ public class Stats {
             EvaluatedMove evaluatedMove = moves.get(i);
             addEvaluatedMove(evaluatedMove, playerWon, elo);
 
+            // Assuming we have a previous move, grab it to figure out if this move transitioned us from winning to
+            // losing, or the other way around.
+            if (i > 0) {
+
+                EvaluatedMove previousMove = moves.get(i-1);
+                if (previousMove.getPositionEvaluation() < 0 && evaluatedMove.getPositionEvaluation() > 0) {
+                    losingToWinning++;
+                    if (playerWon != null && playerWon) {
+                        losingToWinningWonGames++;
+                    } else if (playerWon != null && !playerWon) {
+                        losingToWinningLostGames++;
+                    }
+                } else if (previousMove.getPositionEvaluation() > 0 && evaluatedMove.getPositionEvaluation() < 0) {
+                    winningToLosing++;
+                    if (playerWon != null && playerWon) {
+                        winningToLosingWonGames++;
+                    } else if (playerWon != null && !playerWon) {
+                        winningToLosingLostGames++;
+                    }
+                }
+
+            }
+
         }
 
     }
@@ -97,6 +128,9 @@ public class Stats {
                     rangeCounts[i] > 0 ? 100.0 * (double) tEvaluationCounts[i][2] / (double) rangeCounts[i] : 0.00
             ));
         }
+        System.out.println();
+        System.out.println(String.format("Losing to Winning: %d moves", losingToWinning));
+        System.out.println(String.format("Winning to Losing: %d moves", winningToLosing));
 
         System.out.println();
         System.out.println("---------------------------------------------------------------------------------------");
@@ -112,6 +146,9 @@ public class Stats {
                     rangeCountsWonGames[i] > 0 ? 100.0 * (double) tEvaluationCountsWonGames[i][2] / (double) rangeCountsWonGames[i] : 0.00
             ));
         }
+        System.out.println();
+        System.out.println(String.format("Losing to Winning: %d moves", losingToWinningWonGames));
+        System.out.println(String.format("Winning to Losing: %d moves", winningToLosingWonGames));
 
         System.out.println();
         System.out.println("---------------------------------------------------------------------------------------");
@@ -127,6 +164,9 @@ public class Stats {
                     rangeCountsLostGames[i] > 0 ? 100.0 * (double) tEvaluationCountsLostGames[i][2] / (double) rangeCountsLostGames[i] : 0.00
             ));
         }
+        System.out.println();
+        System.out.println(String.format("Losing to Winning: %d moves", losingToWinningLostGames));
+        System.out.println(String.format("Winning to Losing: %d moves", winningToLosingLostGames));
 
         System.out.println();
         System.out.println(String.format("Analysis took %s", duration.toString()));
